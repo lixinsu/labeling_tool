@@ -12,4 +12,7 @@ For example, we label the question and passage in SQuAD 2.0 to the classes in wh
 'query_id': text,
 }
 ```
-2. **python server.py** starts labeling.
+2. **python server.py** starts labeling.  
+3.Then the labeling setting is as following:  
+![label.png]({{site.baseurl}}/label.png)
+
