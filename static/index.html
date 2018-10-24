@@ -1,0 +1,116 @@
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<div id='app'>
+
+<p> {{query_id}} </p>
+<p> {{query}} </p>
+<p> {{passage}} </p>
+
+
+<input type="radio" id="one" value="0" v-model="picked">
+<label for="one">Negation</label>
+<br>
+<input type="radio" id="two" value="1" v-model="picked">
+<label for="two">Antonym</label>
+<br>
+<input type="radio" id="three" value="2" v-model="picked">
+<label for="three">Entity Swap</label>
+<br>
+<input type="radio" id="four" value="3" v-model="picked">
+<label for="four">Mutual Exclusion</label>
+<br>
+<input type="radio" id="five" value="4" v-model="picked">
+<label for="five">Impossible Condition</label>
+<br>
+<input type="radio" id="six" value="5" v-model="picked">
+<label for="six">Other Neutral</label>
+<br>
+<input type="radio" id="seven" value="6" v-model="picked">
+<label for="seven">Answerable</label>
+<br>
+<span>Picked: {{options[picked]}}</span>
+<br>
+<button v-on:click="lastItem"> 上一条</button>
+<button v-on:click="nextItem"> 下一条</button>
+<br>
+<button v-on:click="saveResult"> 持久化磁盘</button>
+<br>
+<span>{{count}}</span>
+<br>    
+<span>{{remain}}</span>
+<br>
+</div>
+<script>
+var app = new Vue({
+    el: '#app',
+    data:{
+     query: '',
+     passage: '',
+     picked: '',
+     count: '',
+     remain: '',
+     options: [],
+    },
+    methods:{
+        saveResult: function(){
+            axios.get('/save').then(function (response){
+                var vm = this
+                vm.count = response.data.count
+                vm.remain = response.data.remain
+                alert(response.data.remain)
+            })
+        },
+        optionSelect: function(){
+            var vm = this
+            var obj = {
+                  'query_id': vm.query_id,
+                  'option': vm.picked
+            }
+            axios.post('/select', obj).then(function (response){})
+        },
+
+        nextItem: function(){
+            var vm = this
+
+            var obj = {
+                  'query_id': vm.query_id,
+                  'option': vm.picked
+            }
+            axios.post('/select', obj).then(function (response){})
+
+            axios.get('/next').then(function (response) {
+                vm.query = response.data.query
+                vm.query_id = response.data.query_id
+                vm.passage = response.data.passage
+                vm.picked = response.data.option
+                vm.options = response.data.options
+                })
+            .catch(function (error) {
+                vm.query = 'Error! Could not reach the API. ' + error
+            })
+        },
+        lastItem: function(){
+            var vm = this
+            axios.get('/last').then(function (response) {
+                vm.query_id = response.data.query_id
+                vm.options = response.data.options
+                vm.query = response.data.query
+                vm.passage = response.data.passage
+                vm.picked = response.data.option
+                })
+            .catch(function (error) {
+                vm.query = 'Error! Could not reach the API. ' + error
+            })
+            }
+    }
+})
+</script>
